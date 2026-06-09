@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Bonjour {{ full_name }},</p>
+<p><strong>{{ assigner }}</strong> vous a assigné à une tâche :</p>
+<div class="credentials">
+  <p><strong>Tâche :</strong> {{ task_title }}</p>
+</div>
+<a href="{{ task_url }}" class="btn">Voir la tâche</a>
+<p class="note">Si vous ne souhaitez plus recevoir ces notifications, contactez votre administrateur.</p>
+{% endblock %}

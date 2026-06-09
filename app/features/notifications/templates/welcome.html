@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Bonjour <strong>{{ full_name }}</strong>,</p>
+<p>Votre compte a été créé sur <strong>{{ app_name }}</strong>. Voici vos identifiants de connexion :</p>
+<div class="credentials">
+  <p><strong>Email :</strong> {{ email }}</p>
+  <p><strong>Mot de passe :</strong> {{ password }}</p>
+</div>
+<p>Pour votre sécurité, vous serez invité à choisir un nouveau mot de passe lors de votre première connexion.</p>
+<a href="{{ login_url }}" class="btn">Se connecter</a>
+<p class="note">Si vous n'attendiez pas ce message, ignorez cet email ou contactez votre administrateur.</p>
+{% endblock %}
