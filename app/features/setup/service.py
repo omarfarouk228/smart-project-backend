@@ -76,11 +76,17 @@ async def run_setup(db: AsyncSession, payload: SetupPayload) -> None:
         org.smtp_configured = True
     db.add(org)
 
+    existing_perms_result = await db.execute(select(Permission))
+    existing_by_codename = {p.codename: p for p in existing_perms_result.scalars().all()}
+
     permissions = []
     for p in _PERMISSIONS:
-        perm = Permission(**p)
-        db.add(perm)
-        permissions.append(perm)
+        if p["codename"] in existing_by_codename:
+            permissions.append(existing_by_codename[p["codename"]])
+        else:
+            perm = Permission(**p)
+            db.add(perm)
+            permissions.append(perm)
 
     admin_role = Role(
         name="Administrateur",
