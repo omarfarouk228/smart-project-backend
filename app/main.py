@@ -17,9 +17,10 @@ from app.features.projects.router import router as projects_router
 from app.features.roles.router import router as roles_router
 from app.features.sprints.router import router as sprints_router
 from app.features.setup.router import router as setup_router
-from app.features.tasks.router import router as tasks_router
+from app.features.tasks.router import router as tasks_router, my_tasks_router
 from app.features.users.router import router as users_router
 from app.features.websockets.router import router as ws_router
+from app.features.audit.router import router as audit_router
 
 
 @asynccontextmanager
@@ -38,7 +39,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="SmartTask API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="ProjectEyes API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -61,8 +62,10 @@ app.include_router(roles_router)
 app.include_router(organization_router)
 app.include_router(projects_router)
 app.include_router(tasks_router)
+app.include_router(my_tasks_router)
 app.include_router(sprints_router)
 app.include_router(ws_router)
+app.include_router(audit_router)
 
 
 @app.get("/health", tags=["health"])

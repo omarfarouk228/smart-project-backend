@@ -173,3 +173,24 @@ async def send_assigned_email(
             "task_url": task_url,
         },
     )
+
+
+_ROLE_LABELS = {"owner": "Propriétaire", "member": "Membre", "viewer": "Observateur"}
+
+
+async def send_project_added_email(
+    org, to: str, full_name: str, adder: str, project_name: str, role: str, project_url: str
+) -> bool:
+    return await send_email(
+        org=org,
+        to=to,
+        subject=f"Vous avez été ajouté à un projet — {org.app_name}",
+        template_name="project_added.html",
+        context={
+            "full_name": full_name,
+            "adder": adder,
+            "project_name": project_name,
+            "role": _ROLE_LABELS.get(role, role),
+            "project_url": project_url,
+        },
+    )

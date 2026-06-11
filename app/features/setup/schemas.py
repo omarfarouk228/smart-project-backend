@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 class SetupOrganizationData(BaseModel):
     name: str = Field(..., min_length=2, max_length=255)
-    app_name: str = Field(default="SmartTask", max_length=255)
+    app_name: str = Field(default="ProjectEyes", max_length=255)
     primary_color: str = Field(default="#6366f1", pattern=r"^#[0-9a-fA-F]{6}$")
     secondary_color: str = Field(default="#8b5cf6", pattern=r"^#[0-9a-fA-F]{6}$")
     accent_color: str = Field(default="#06b6d4", pattern=r"^#[0-9a-fA-F]{6}$")

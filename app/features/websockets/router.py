@@ -44,9 +44,14 @@ async def ws_project(
 
     await websocket.accept()
 
-    redis = await get_redis()
-    pubsub = redis.pubsub()
-    await pubsub.subscribe(f"project:{project_id}")
+    # Try to connect to Redis; gracefully degrade if unavailable
+    pubsub = None
+    try:
+        redis = await get_redis()
+        pubsub = redis.pubsub()
+        await pubsub.subscribe(f"project:{project_id}")
+    except Exception:
+        pubsub = None
 
     async def forward_redis():
         async for message in pubsub.listen():
@@ -63,16 +68,19 @@ async def ws_project(
         except WebSocketDisconnect:
             pass
 
-    redis_task = asyncio.create_task(forward_redis())
     client_task = asyncio.create_task(keep_alive())
+    tasks: list[asyncio.Task] = [client_task]
+    if pubsub is not None:
+        tasks.append(asyncio.create_task(forward_redis()))
 
     try:
-        done, pending = await asyncio.wait(
-            [redis_task, client_task],
-            return_when=asyncio.FIRST_COMPLETED,
-        )
+        done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         for t in pending:
             t.cancel()
     finally:
-        await pubsub.unsubscribe(f"project:{project_id}")
-        await pubsub.aclose()
+        if pubsub is not None:
+            try:
+                await pubsub.unsubscribe(f"project:{project_id}")
+                await pubsub.aclose()
+            except Exception:
+                pass

@@ -79,6 +79,19 @@ class TimeEntryResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class AttachmentResponse(BaseModel):
+    id: uuid.UUID
+    task_id: uuid.UUID
+    uploader: UserBasic
+    filename: str
+    file_path: str
+    file_size: int
+    mime_type: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class TaskResponse(BaseModel):
     id: uuid.UUID
     project_id: uuid.UUID
@@ -97,6 +110,7 @@ class TaskResponse(BaseModel):
     subtask_count: int
     subtask_done_count: int
     comment_count: int
+    attachment_count: int
     created_at: datetime
     updated_at: datetime
 
@@ -107,6 +121,7 @@ class TaskDetailResponse(TaskResponse):
     subtasks: list[SubTaskResponse]
     comments: list[CommentResponse]
     time_entries: list[TimeEntryResponse]
+    attachments: list[AttachmentResponse]
 
 
 class BoardResponse(BaseModel):

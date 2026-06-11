@@ -39,6 +39,10 @@ class SprintBoardResponse(BaseModel):
     tasks: list[TaskResponse]
 
 
+class SprintWithTasksResponse(SprintResponse):
+    tasks: list[TaskResponse]
+
+
 class BacklogResponse(BaseModel):
     tasks: list[TaskResponse]
-    sprints: list[SprintResponse]
+    sprints: list[SprintWithTasksResponse]

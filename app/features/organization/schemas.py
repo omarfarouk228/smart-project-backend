@@ -16,6 +16,12 @@ class OrganizationPublic(BaseModel):
     accent_color: str
     default_theme: str
     setup_completed: bool
+    smtp_host: Optional[str] = None
+    smtp_port: int = 587
+    smtp_user: Optional[str] = None
+    smtp_from: Optional[str] = None
+    smtp_ssl: bool = True
+    smtp_configured: bool = False
 
 
 class OrganizationUpdate(BaseModel):

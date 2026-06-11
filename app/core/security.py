@@ -4,20 +4,18 @@ import string
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 def generate_password(length: int = 12) -> str:
@@ -44,7 +42,7 @@ def create_access_token(user_id: str) -> str:
 def create_refresh_token(user_id: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     return jwt.encode(
-        {"sub": user_id, "exp": expire, "type": "refresh"},
+        {"sub": user_id, "exp": expire, "type": "refresh", "jti": secrets.token_hex(16)},
         settings.SECRET_KEY,
         algorithm=settings.ALGORITHM,
     )

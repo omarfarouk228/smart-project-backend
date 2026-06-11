@@ -62,6 +62,11 @@ class Task(Base):
         lazy="selectin", order_by="TimeEntry.logged_at"
     )
 
+    attachments: Mapped[list["TaskAttachment"]] = relationship(
+        "TaskAttachment", back_populates="task", cascade="all, delete-orphan",
+        lazy="selectin", order_by="TaskAttachment.created_at"
+    )
+
     @property
     def subtask_count(self) -> int:
         return len(self.subtasks)
@@ -77,6 +82,10 @@ class Task(Base):
     @property
     def logged_minutes(self) -> int:
         return sum(e.minutes for e in self.time_entries)
+
+    @property
+    def attachment_count(self) -> int:
+        return len(self.attachments)
 
 
 class SubTask(Base):
@@ -156,3 +165,23 @@ class TaskLabel(Base):
     label_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("labels.id", ondelete="CASCADE"), primary_key=True
     )
+
+
+class TaskAttachment(Base):
+    __tablename__ = "task_attachments"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    uploader_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    filename: Mapped[str] = mapped_column(String(500), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(200), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    task: Mapped["Task"] = relationship("Task", back_populates="attachments")
+    uploader: Mapped["User"] = relationship("User", lazy="selectin")

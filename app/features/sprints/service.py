@@ -2,6 +2,7 @@ import uuid
 from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, not_, exists
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException
 
 from app.features.sprints.models import Sprint, SprintTask, SprintStatus
@@ -12,6 +13,7 @@ from app.features.sprints.schemas import SprintCreate, SprintUpdate
 async def get_sprints(db: AsyncSession, project_id: uuid.UUID) -> list[Sprint]:
     result = await db.execute(
         select(Sprint)
+        .options(selectinload(Sprint.sprint_tasks))
         .where(Sprint.project_id == project_id)
         .order_by(Sprint.created_at.desc())
     )
@@ -20,7 +22,9 @@ async def get_sprints(db: AsyncSession, project_id: uuid.UUID) -> list[Sprint]:
 
 async def get_sprint(db: AsyncSession, sprint_id: uuid.UUID, project_id: uuid.UUID) -> Sprint:
     result = await db.execute(
-        select(Sprint).where(Sprint.id == sprint_id, Sprint.project_id == project_id)
+        select(Sprint)
+        .options(selectinload(Sprint.sprint_tasks))
+        .where(Sprint.id == sprint_id, Sprint.project_id == project_id)
     )
     sprint = result.scalar_one_or_none()
     if not sprint:
@@ -28,7 +32,7 @@ async def get_sprint(db: AsyncSession, sprint_id: uuid.UUID, project_id: uuid.UU
     return sprint
 
 
-async def create_sprint(db: AsyncSession, project_id: uuid.UUID, data: SprintCreate) -> Sprint:
+async def create_sprint(db: AsyncSession, project_id: uuid.UUID, data: SprintCreate, actor_id: uuid.UUID | None = None) -> Sprint:
     sprint = Sprint(
         project_id=project_id,
         name=data.name,
@@ -37,9 +41,14 @@ async def create_sprint(db: AsyncSession, project_id: uuid.UUID, data: SprintCre
         end_date=data.end_date,
     )
     db.add(sprint)
+    await db.flush()
+
+    from app.features.audit.service import log as audit_log
+    from app.features.audit.models import AuditAction
+    await audit_log(db, project_id, actor_id, AuditAction.sprint_created, "sprint", str(sprint.id), sprint.name)
+
     await db.commit()
-    await db.refresh(sprint, attribute_names=["sprint_tasks"])
-    return sprint
+    return await get_sprint(db, sprint.id, project_id)
 
 
 async def update_sprint(
@@ -49,8 +58,7 @@ async def update_sprint(
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(sprint, field, value)
     await db.commit()
-    await db.refresh(sprint)
-    return sprint
+    return await get_sprint(db, sprint_id, project_id)
 
 
 async def start_sprint(db: AsyncSession, sprint_id: uuid.UUID, project_id: uuid.UUID) -> Sprint:
@@ -73,9 +81,13 @@ async def start_sprint(db: AsyncSession, sprint_id: uuid.UUID, project_id: uuid.
     sprint.status = SprintStatus.active
     if not sprint.start_date:
         sprint.start_date = date.today()
+
+    from app.features.audit.service import log as audit_log
+    from app.features.audit.models import AuditAction
+    await audit_log(db, project_id, None, AuditAction.sprint_started, "sprint", str(sprint_id), sprint.name)
+
     await db.commit()
-    await db.refresh(sprint)
-    return sprint
+    return await get_sprint(db, sprint_id, project_id)
 
 
 async def complete_sprint(db: AsyncSession, sprint_id: uuid.UUID, project_id: uuid.UUID) -> Sprint:
@@ -85,9 +97,13 @@ async def complete_sprint(db: AsyncSession, sprint_id: uuid.UUID, project_id: uu
     sprint.status = SprintStatus.completed
     if not sprint.end_date:
         sprint.end_date = date.today()
+
+    from app.features.audit.service import log as audit_log
+    from app.features.audit.models import AuditAction
+    await audit_log(db, project_id, None, AuditAction.sprint_completed, "sprint", str(sprint_id), sprint.name)
+
     await db.commit()
-    await db.refresh(sprint)
-    return sprint
+    return await get_sprint(db, sprint_id, project_id)
 
 
 async def delete_sprint(db: AsyncSession, sprint_id: uuid.UUID, project_id: uuid.UUID) -> None:

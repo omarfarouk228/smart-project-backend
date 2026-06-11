@@ -12,8 +12,8 @@ router = APIRouter(prefix="/api/organization", tags=["organization"])
 
 _DEFAULT_PUBLIC = {
     "id": "00000000-0000-0000-0000-000000000000",
-    "name": "SmartTask",
-    "app_name": "SmartTask",
+    "name": "ProjectEyes",
+    "app_name": "ProjectEyes",
     "logo_path": None,
     "favicon_path": None,
     "primary_color": "#6366f1",

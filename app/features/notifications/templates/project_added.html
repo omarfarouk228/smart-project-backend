@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Bonjour {{ full_name }},</p>
+<p>Vous avez été ajouté(e) au projet <strong>{{ project_name }}</strong> par <strong>{{ adder }}</strong>.</p>
+<div class="credentials">
+  <p><strong>Projet :</strong> {{ project_name }}</p>
+  <p><strong>Rôle :</strong> {{ role }}</p>
+</div>
+<a href="{{ project_url }}" class="btn">Accéder au projet</a>
+<p class="note">Si vous ne souhaitez plus recevoir ces notifications, contactez votre administrateur.</p>
+{% endblock %}

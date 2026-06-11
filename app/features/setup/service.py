@@ -10,20 +10,39 @@ from app.features.roles.models import Role, Permission, RolePermission, UserRole
 from app.features.setup.schemas import SetupPayload
 
 _PERMISSIONS = [
-    {"codename": "organization.view", "name": "Voir les paramètres", "category": "organization"},
-    {"codename": "organization.update", "name": "Modifier les paramètres", "category": "organization"},
-    {"codename": "users.view", "name": "Voir les utilisateurs", "category": "users"},
-    {"codename": "users.create", "name": "Créer des utilisateurs", "category": "users"},
-    {"codename": "users.update", "name": "Modifier des utilisateurs", "category": "users"},
+    # Organisation
+    {"codename": "organization.view",   "name": "Voir les paramètres",          "category": "organization"},
+    {"codename": "organization.update", "name": "Modifier les paramètres",       "category": "organization"},
+    # Utilisateurs
+    {"codename": "users.view",   "name": "Voir les utilisateurs",    "category": "users"},
+    {"codename": "users.create", "name": "Créer des utilisateurs",   "category": "users"},
+    {"codename": "users.update", "name": "Modifier des utilisateurs","category": "users"},
     {"codename": "users.delete", "name": "Désactiver des utilisateurs", "category": "users"},
-    {"codename": "roles.view", "name": "Voir les rôles", "category": "roles"},
-    {"codename": "roles.create", "name": "Créer des rôles", "category": "roles"},
-    {"codename": "roles.update", "name": "Modifier des rôles", "category": "roles"},
-    {"codename": "roles.delete", "name": "Supprimer des rôles", "category": "roles"},
-    {"codename": "projects.view", "name": "Voir les projets", "category": "projects"},
-    {"codename": "projects.create", "name": "Créer des projets", "category": "projects"},
-    {"codename": "projects.update", "name": "Modifier des projets", "category": "projects"},
-    {"codename": "projects.delete", "name": "Supprimer des projets", "category": "projects"},
+    # Rôles
+    {"codename": "roles.view",   "name": "Voir les rôles",           "category": "roles"},
+    {"codename": "roles.create", "name": "Créer des rôles",          "category": "roles"},
+    {"codename": "roles.update", "name": "Modifier des rôles",       "category": "roles"},
+    {"codename": "roles.delete", "name": "Supprimer des rôles",      "category": "roles"},
+    # Projets
+    {"codename": "projects.view",            "name": "Voir les projets",              "category": "projects"},
+    {"codename": "projects.create",          "name": "Créer des projets",             "category": "projects"},
+    {"codename": "projects.update",          "name": "Modifier les paramètres projet","category": "projects"},
+    {"codename": "projects.delete",          "name": "Supprimer des projets",         "category": "projects"},
+    {"codename": "projects.manage_members",  "name": "Gérer les membres du projet",   "category": "projects"},
+    {"codename": "projects.manage_columns",  "name": "Gérer les colonnes du projet",  "category": "projects"},
+    # Tâches
+    {"codename": "tasks.view",    "name": "Voir les tâches",          "category": "tasks"},
+    {"codename": "tasks.create",  "name": "Créer des tâches",         "category": "tasks"},
+    {"codename": "tasks.update",  "name": "Modifier des tâches",      "category": "tasks"},
+    {"codename": "tasks.delete",  "name": "Supprimer des tâches",     "category": "tasks"},
+    {"codename": "tasks.comment", "name": "Commenter les tâches",     "category": "tasks"},
+    # Sprints
+    {"codename": "sprints.view",   "name": "Voir les sprints",                  "category": "sprints"},
+    {"codename": "sprints.create", "name": "Créer des sprints",                 "category": "sprints"},
+    {"codename": "sprints.update", "name": "Modifier des sprints",              "category": "sprints"},
+    {"codename": "sprints.delete", "name": "Supprimer des sprints",             "category": "sprints"},
+    {"codename": "sprints.manage", "name": "Démarrer / terminer des sprints",   "category": "sprints"},
+    # Rapports
     {"codename": "reports.view", "name": "Voir les rapports", "category": "reports"},
 ]
 

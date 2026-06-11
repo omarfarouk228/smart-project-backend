@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.core.config import settings
 from app.core.security import (
@@ -14,7 +14,7 @@ from app.core.security import (
 )
 from app.features.users.models import User
 from app.features.auth.models import RefreshToken
-from app.features.auth.schemas import LoginRequest, TokenResponse, ChangePasswordRequest
+from app.features.auth.schemas import LoginRequest, TokenResponse, ChangePasswordRequest, ProfileUpdateRequest
 
 
 async def login(db: AsyncSession, data: LoginRequest) -> TokenResponse:
@@ -52,11 +52,13 @@ async def refresh(db: AsyncSession, refresh_token: str) -> TokenResponse:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
 
     stored = await db.execute(
-        select(RefreshToken).where(
+        select(RefreshToken)
+        .where(
             RefreshToken.token_hash == hash_token(refresh_token),
             RefreshToken.revoked == False,
             RefreshToken.expires_at > datetime.now(timezone.utc),
         )
+        .limit(1)
     )
     token_row = stored.scalar_one_or_none()
     if not token_row:
@@ -67,7 +69,12 @@ async def refresh(db: AsyncSession, refresh_token: str) -> TokenResponse:
     if not user or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur introuvable")
 
-    token_row.revoked = True
+    # Revoke all tokens with this hash (covers any duplicates accumulated without unique constraint)
+    await db.execute(
+        update(RefreshToken)
+        .where(RefreshToken.token_hash == hash_token(refresh_token))
+        .values(revoked=True)
+    )
 
     new_access = create_access_token(str(user.id))
     new_refresh = create_refresh_token(str(user.id))
@@ -87,13 +94,12 @@ async def refresh(db: AsyncSession, refresh_token: str) -> TokenResponse:
 
 
 async def logout(db: AsyncSession, refresh_token: str) -> None:
-    result = await db.execute(
-        select(RefreshToken).where(RefreshToken.token_hash == hash_token(refresh_token))
+    await db.execute(
+        update(RefreshToken)
+        .where(RefreshToken.token_hash == hash_token(refresh_token))
+        .values(revoked=True)
     )
-    token_row = result.scalar_one_or_none()
-    if token_row:
-        token_row.revoked = True
-        await db.commit()
+    await db.commit()
 
 
 async def change_password(db: AsyncSession, user: User, data: ChangePasswordRequest) -> None:
@@ -103,3 +109,11 @@ async def change_password(db: AsyncSession, user: User, data: ChangePasswordRequ
     user.hashed_password = hash_password(data.new_password)
     user.must_change_password = False
     await db.commit()
+
+
+async def update_profile(db: AsyncSession, user: User, data: ProfileUpdateRequest) -> User:
+    user.first_name = data.first_name
+    user.last_name = data.last_name
+    await db.commit()
+    await db.refresh(user)
+    return user

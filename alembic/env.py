@@ -15,9 +15,10 @@ from app.features.users.models import User  # noqa: F401
 from app.features.roles.models import Role, Permission, UserRole, RolePermission  # noqa: F401
 from app.features.auth.models import RefreshToken  # noqa: F401
 from app.features.projects.models import Project, ProjectMember, Column  # noqa: F401
-from app.features.tasks.models import Task, Label, TaskLabel, SubTask, TaskComment, TimeEntry  # noqa: F401
+from app.features.tasks.models import Task, Label, TaskLabel, SubTask, TaskComment, TimeEntry, TaskAttachment  # noqa: F401
 from app.features.sprints.models import Sprint, SprintTask  # noqa: F401
 from app.features.notifications.models import Notification  # noqa: F401
+from app.features.audit.models import AuditLog  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

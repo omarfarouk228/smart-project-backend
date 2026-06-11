@@ -11,7 +11,7 @@ class Organization(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    app_name: Mapped[str] = mapped_column(String(255), default="SmartTask")
+    app_name: Mapped[str] = mapped_column(String(255), default="ProjectEyes")
     logo_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     favicon_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     primary_color: Mapped[str] = mapped_column(String(7), default="#6366f1")

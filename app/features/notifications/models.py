@@ -10,6 +10,8 @@ from app.core.database import Base
 class NotificationType(str, enum.Enum):
     mention = "mention"
     assigned = "assigned"
+    project_added = "project_added"
+    task_updated = "task_updated"
 
 
 class Notification(Base):
