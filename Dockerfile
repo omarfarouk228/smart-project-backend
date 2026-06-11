@@ -15,10 +15,11 @@ RUN adduser --disabled-password --gecos "" appuser
 COPY --chown=appuser:appuser . .
 
 RUN mkdir -p storage/attachments storage/logos storage/avatars \
-    && chown -R appuser:appuser storage
+    && chown -R appuser:appuser storage \
+    && chmod +x entrypoint.sh
 
 USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["./entrypoint.sh"]
