@@ -92,6 +92,11 @@ async def update_user(db: AsyncSession, user_id: uuid.UUID, data: UserUpdate) ->
         user.first_name = data.first_name
     if data.last_name is not None:
         user.last_name = data.last_name
+    if data.email is not None and data.email != user.email:
+        existing = await db.execute(select(User).where(User.email == data.email))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email déjà utilisé")
+        user.email = data.email
     if data.is_active is not None:
         user.is_active = data.is_active
 
@@ -104,6 +109,16 @@ async def update_user(db: AsyncSession, user_id: uuid.UUID, data: UserUpdate) ->
     await db.commit()
     await db.refresh(user)
     return user
+
+
+async def delete_user(db: AsyncSession, user_id: uuid.UUID, current_user_id: uuid.UUID) -> None:
+    if user_id == current_user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Impossible de supprimer votre propre compte")
+    user = await get_user(db, user_id)
+    if user.is_superadmin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Impossible de supprimer un super administrateur")
+    await db.delete(user)
+    await db.commit()
 
 
 async def reset_user_password(db: AsyncSession, user_id: uuid.UUID) -> tuple[User, str]:

@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user, require_permissions
 from app.features.notifications.service import send_welcome_email, send_password_reset_email
 from app.features.users import service
+from app.features.users.models import User
 from app.features.users.schemas import UserCreate, UserUpdate, UserResponse, UserListResponse
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -70,6 +71,19 @@ async def reset_password(user_id: uuid.UUID, db: AsyncSession = Depends(get_db))
     if org:
         await send_password_reset_email(org, user.email, user.full_name, new_password)
     return {"message": "Mot de passe réinitialisé et envoyé par email"}
+
+
+@router.delete(
+    "/{user_id}",
+    status_code=204,
+    dependencies=[Depends(require_permissions("users.delete"))],
+)
+async def delete_user(
+    user_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await service.delete_user(db, user_id, current_user.id)
 
 
 @router.post("/{user_id}/avatar", response_model=UserResponse)

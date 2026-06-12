@@ -14,6 +14,7 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    email: Optional[EmailStr] = None
     is_active: Optional[bool] = None
     role_ids: Optional[list[uuid.UUID]] = None
 
